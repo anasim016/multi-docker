@@ -1,0 +1,18 @@
+# Specifying base image - 
+FROM node:14.14.0-alpine
+
+# Specifying working directory - 
+WORKDIR /usr/app
+
+# Copying only package.json to working directory.
+# To install project dependencies, npm needs only this file.
+COPY ./package.json .
+
+# Installing project dependencies - 
+RUN npm install
+
+# Copying rest of the files to current working directory - 
+COPY ./ ./
+
+# Specify primary command - 
+CMD ["npm", "run", "start"]
