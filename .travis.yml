@@ -1,0 +1,30 @@
+language: generic
+sudo: required
+services:
+  - docker
+
+before_install:
+  # Once required services are available (here, it is Docker), will instruct travis to 
+  # build a image of `client` service using `Dockerfile.dev`.
+  - docker build -t anasim016/client-test -f ./client/Dockerfile.dev ./client
+
+script:
+  # Once the image is build and available, will instruct travis to run the tests by 
+  # bringing up a container out of that image.
+  - docker run -e CI=true anasim016/client-test npm test
+
+after_success:
+  # Once all tests are successful, will instruct travis to build prod images of 
+  # all our services (here, they are client, nginx, server, worker).
+  - docker build -t anasim016/multi-client ./client
+  - docker build -t anasim016/multi-nginx ./nginx
+  - docker build -t anasim016/multi-server ./server
+  - docker build -t anasim016/multi-worker ./worker
+  # Once all prod images are available, will instruct travis to push those images to 
+  # our Docker Hub account. 
+  # Note - Before push, we need to login to our Docker account via Docker CLI tool.
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push anasim016/multi-client
+  - docker push anasim016/multi-nginx
+  - docker push anasim016/multi-server
+  - docker push anasim016/multi-worker
